@@ -1,0 +1,971 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#07090d">
+  <title>Folio</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%2307090d'/%3E%3Crect x='1.25' y='1.25' width='29.5' height='29.5' rx='7' fill='none' stroke='%23e0b15a' stroke-width='1.5'/%3E%3Ctext x='16' y='21.5' text-anchor='middle' font-family='sans-serif' font-size='15' font-weight='700' fill='%23e0b15a'%3EF%3C/text%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --paper: #07090d;
+      --sheet: #121722;
+      --ink: #f4f7fb;
+      --muted: #93a0b5;
+      --line: #2a3344;
+      --brass: #e0b15a;
+      --brass-soft: #2a2318;
+      --sage: #3dcc8a;
+      --sage-soft: #10261c;
+      --clay: #f07178;
+      --clay-soft: #2c1619;
+      color-scheme: dark;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    body {
+      background: var(--paper);
+      color: var(--ink);
+      font: 16px/1.5 Manrope, "Segoe UI", sans-serif;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: clip;
+    }
+    button, input, select { font: inherit; color: inherit; }
+    button { cursor: pointer; }
+    button:disabled { opacity: .5; cursor: not-allowed; }
+    :focus-visible { outline: 2px solid var(--brass); outline-offset: 2px; }
+    ::selection { background: var(--brass); color: #14120c; }
+    .wrap { max-width: 72rem; margin: 0 auto; padding: 0 1rem; min-width: 0; }
+    header, main, .card, .stack, .split, .grid-2, .grid-4, .scroll, .between { min-width: 0; max-width: 100%; }
+    header {
+      position: sticky; top: 0; z-index: 20;
+      background: color-mix(in srgb, var(--paper) 90%, transparent);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--line);
+    }
+    .gold { height: 1px; background: var(--brass); }
+    .top { display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; justify-content: space-between; padding: 1rem 0 .75rem; }
+    .brand { display: flex; gap: .75rem; align-items: center; }
+    .mark {
+      width: 2.5rem; height: 2.5rem; display: grid; place-items: center;
+      border-radius: .6rem; background: var(--brass); color: #14120c; font-weight: 800;
+    }
+    .brand h1 { margin: 0; font-size: 1.35rem; letter-spacing: -.03em; line-height: 1; }
+    .brand p { margin: .2rem 0 0; color: var(--muted); font-size: .875rem; }
+    .month { display: flex; align-items: center; gap: .5rem; max-width: 100%; }
+    .month strong { min-width: 11rem; text-align: center; font-weight: 600; }
+    @media (max-width: 640px) {
+      .month { width: 100%; }
+      .month strong { min-width: 0; flex: 1; }
+    }
+    nav { display: flex; flex-wrap: wrap; gap: .25rem; padding-bottom: .75rem; }
+    main { padding: 1.25rem 0 4rem; }
+    .grid-4 { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; }
+    .grid-2 { display: grid; gap: 1rem; }
+    .card { background: var(--sheet); border: 1px solid var(--line); border-radius: 1rem; padding: 1rem 1.1rem; }
+    .kpi span { display: block; color: var(--muted); font-size: .75rem; letter-spacing: .04em; text-transform: uppercase; }
+    .kpi strong { display: block; margin-top: .35rem; font-size: 1.35rem; letter-spacing: -.03em; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+    .sage { color: var(--sage); }
+    .clay { color: var(--clay); }
+    h2 { margin: 0 0 .35rem; font-size: 1.35rem; letter-spacing: -.03em; font-weight: 700; }
+    .muted { color: var(--muted); }
+    .row { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; }
+    .btn, .field {
+      min-height: 2.75rem; border-radius: 999px; border: 1px solid transparent;
+      padding: 0 1rem; font-size: .875rem; font-weight: 600;
+    }
+    .field { width: 100%; border-radius: .75rem; border-color: var(--line); background: var(--paper); }
+    .field:focus { outline: none; border-color: var(--brass); box-shadow: 0 0 0 3px color-mix(in srgb, var(--brass) 30%, transparent); }
+    select.field {
+      appearance: none; padding-right: 2.2rem;
+      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%2393a0b5' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'><path d='M4 6l4 4 4-4'/></svg>");
+      background-repeat: no-repeat; background-position: right .75rem center;
+    }
+    .btn {
+      background: transparent; color: var(--ink); border-color: var(--line);
+      white-space: normal; text-align: center; line-height: 1.25; max-width: 100%;
+    }
+    .btn:hover { background: var(--sheet); }
+    .btn.primary { background: var(--brass); color: #14120c; border-color: transparent; }
+    .btn.primary:hover { background: color-mix(in srgb, var(--brass) 88%, white); }
+    .btn.on { background: var(--brass); color: #14120c; border-color: transparent; }
+    .btn.danger { background: var(--clay-soft); color: var(--clay); border-color: transparent; }
+    .btn.sageon { background: var(--sage); color: #14120c; border-color: transparent; }
+    .btn.clayon { background: var(--clay); color: #14120c; border-color: transparent; }
+    .icon { width: 2.75rem; padding: 0; }
+    .split { display: grid; gap: 1rem; }
+    .stack { display: grid; gap: .85rem; }
+    label.f { display: grid; gap: .3rem; font-size: .875rem; font-weight: 600; }
+    .check { display: flex; align-items: center; gap: .5rem; min-height: 2.75rem; font-size: .875rem; font-weight: 500; }
+    .list { list-style: none; margin: 0; padding: 0; }
+    .list li { display: flex; justify-content: space-between; gap: .75rem; padding: .8rem 0; border-bottom: 1px solid var(--line); }
+    .list li:last-child { border-bottom: 0; }
+    .money { font-variant-numeric: tabular-nums; letter-spacing: -.03em; font-weight: 700; white-space: nowrap; }
+    .note { margin: .15rem 0 0; color: var(--muted); font-size: .875rem; }
+    .callout { background: var(--brass-soft); border: 1px solid var(--line); border-radius: .9rem; padding: .8rem 1rem; }
+    .warn { border-left: 4px solid var(--clay); background: var(--clay-soft); padding: .75rem 1rem; border-radius: .4rem; }
+    .ok { border-left: 4px solid var(--sage); background: var(--sage-soft); padding: .75rem 1rem; border-radius: .4rem; }
+    .hero { font-size: clamp(1.8rem, 4vw, 3rem); letter-spacing: -.04em; margin: .2rem 0; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+    .stats { display: grid; gap: .6rem; }
+    .stat { background: var(--paper); border-radius: .8rem; padding: .7rem .8rem; }
+    .stat b { display: block; font-size: 1.05rem; font-variant-numeric: tabular-nums; }
+    .track { height: .45rem; border-radius: 999px; background: #241e14; overflow: hidden; }
+    .track i { display: block; height: 100%; border-radius: inherit; }
+    table { width: 100%; border-collapse: collapse; font-size: .875rem; }
+    th, td { text-align: left; padding: .45rem .4rem; border-top: 1px solid var(--line); font-variant-numeric: tabular-nums; }
+    th { color: var(--muted); font-weight: 600; position: sticky; top: 0; background: var(--sheet); }
+    .scroll { max-height: 22rem; overflow: auto; -webkit-overflow-scrolling: touch; }
+    .status { margin-bottom: 1rem; }
+    svg.chart { width: 100%; height: auto; display: block; }
+    .legend { display: flex; flex-wrap: wrap; gap: .8rem; color: var(--muted); font-size: .875rem; margin-top: .6rem; }
+    .sw { width: .65rem; height: .65rem; border-radius: 2px; display: inline-block; margin-right: .35rem; vertical-align: middle; }
+    input[type="range"] { width: 100%; accent-color: var(--brass); height: 1.75rem; }
+    .between { display: flex; justify-content: space-between; gap: .75rem; align-items: baseline; }
+    .hide { display: none; }
+    @media (min-width: 800px) {
+      .grid-4 { grid-template-columns: repeat(4, 1fr); }
+      .grid-2 { grid-template-columns: 1fr 1fr; }
+      .split { grid-template-columns: 18rem minmax(0, 1fr); align-items: start; }
+      .stats { grid-template-columns: repeat(3, 1fr); }
+      .card { padding: 1.15rem 1.25rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="gold"></div>
+  <header>
+    <div class="wrap top">
+      <div class="brand">
+        <div class="mark" aria-hidden="true">F</div>
+        <div>
+          <h1>Folio</h1>
+          <p id="book-name">Libro de caja</p>
+        </div>
+      </div>
+      <div class="month">
+        <button class="btn icon" type="button" id="prev" aria-label="Mes anterior">‹</button>
+        <strong id="month-label"></strong>
+        <button class="btn icon" type="button" id="next" aria-label="Mes siguiente">›</button>
+        <button class="btn" type="button" id="today">Hoy</button>
+      </div>
+    </div>
+    <div class="wrap">
+      <nav id="nav" aria-label="Secciones"></nav>
+    </div>
+  </header>
+  <main class="wrap">
+    <p class="card status" id="status" role="status" hidden></p>
+    <div id="view"></div>
+  </main>
+  <script>
+    const KEY = "folio-html-v1";
+    const EXPENSE = ["Vivienda", "Comida", "Transporte", "Servicios", "Salud", "Ocio", "Compras", "Educación", "Otros"];
+    const INCOME = ["Sueldo", "Freelance", "Inversiones", "Otros ingresos"];
+    const COLORS = ["#e0b15a", "#3dcc8a", "#f07178", "#7aa2ff", "#e08a6a", "#67d2e4", "#f0b429", "#9aa8c7"];
+    const TABS = [
+      ["resumen", "Resumen"],
+      ["movimientos", "Movimientos"],
+      ["limites", "Límites"],
+      ["crecer", "Crecer"],
+      ["respaldo", "Respaldo"]
+    ];
+
+    const ui = {
+      tab: "resumen",
+      month: monthKey(new Date()),
+      query: "",
+      kindFilter: "all",
+      scope: "month",
+      pending: null,
+      notice: ""
+    };
+    let draft = blankDraft();
+    let state = load();
+
+    function blankDraft() {
+      return { kind: "expense", amount: "", category: "Comida", custom: "", date: "", note: "", recurring: false, editing: null };
+    }
+    function fresh() {
+      return {
+        txs: [], budgets: [], currency: "ARS",
+        expenseCats: EXPENSE.slice(), incomeCats: INCOME.slice(),
+        grow: { initial: 0, monthly: 100000, annualRate: 30, inflation: 25, years: 10, goal: 0 },
+        ledgerName: ""
+      };
+    }
+    function load() {
+      try {
+        const raw = localStorage.getItem(KEY);
+        if (!raw) return fresh();
+        const data = JSON.parse(raw);
+        if (!data || !Array.isArray(data.txs)) return fresh();
+        return {
+          txs: data.txs.filter(validTx),
+          budgets: Array.isArray(data.budgets) ? data.budgets.filter((b) => b && b.category && b.limit > 0) : [],
+          currency: ["ARS", "USD", "EUR"].includes(data.currency) ? data.currency : "ARS",
+          expenseCats: data.expenseCats?.length ? data.expenseCats : EXPENSE.slice(),
+          incomeCats: data.incomeCats?.length ? data.incomeCats : INCOME.slice(),
+          grow: Object.assign(fresh().grow, data.grow || {}),
+          ledgerName: String(data.ledgerName || "").slice(0, 40)
+        };
+      } catch { return fresh(); }
+    }
+    function save() { localStorage.setItem(KEY, JSON.stringify(state)); }
+    function uid() { return crypto.randomUUID(); }
+    function esc(s) {
+      return String(s ?? "").replace(/[&<>"']/g, (c) => {
+        if (c === "&") return "&" + "amp;";
+        if (c === "<") return "&" + "lt;";
+        if (c === ">") return "&" + "gt;";
+        if (c === '"') return "&" + "quot;";
+        return "&" + "#39;";
+      });
+    }
+    function round2(n) { return Math.round(n * 100) / 100; }
+    function clamp(n, a, b) { return Math.min(b, Math.max(a, Number.isFinite(n) ? n : a)); }
+    function sanitize() {
+      const g = state.grow;
+      g.initial = round2(clamp(g.initial, 0, 1e12));
+      g.monthly = round2(clamp(g.monthly, 0, 1e12));
+      g.annualRate = clamp(g.annualRate, 0, 300);
+      g.inflation = clamp(g.inflation, 0, 300);
+      g.years = Math.round(clamp(g.years, 1, 40));
+      g.goal = round2(clamp(g.goal, 0, 1e15));
+    }
+    function monthKey(d) { return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0"); }
+    function shift(key, delta) {
+      const [y, m] = key.split("-").map(Number);
+      return monthKey(new Date(y, m - 1 + delta, 1));
+    }
+    function monthLabel(key) {
+      const [y, m] = key.split("-").map(Number);
+      const raw = new Intl.DateTimeFormat("es-AR", { month: "long", year: "numeric" }).format(new Date(y, m - 1, 1));
+      return raw.charAt(0).toLocaleUpperCase("es") + raw.slice(1);
+    }
+    function monthShort(key) {
+      const [y, m] = key.split("-").map(Number);
+      return new Intl.DateTimeFormat("es-AR", { month: "short" }).format(new Date(y, m - 1, 1)).replace(".", "");
+    }
+    function formatDay(iso) {
+      const [y, m, d] = iso.split("-").map(Number);
+      return new Intl.DateTimeFormat("es-AR", { day: "numeric", month: "short" }).format(new Date(y, m - 1, d));
+    }
+    function money(n) {
+      return new Intl.NumberFormat("es-AR", { style: "currency", currency: state.currency, minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(Number.isFinite(n) ? n : 0);
+    }
+    function pct(n) {
+      if (!Number.isFinite(n)) return "—";
+      return new Intl.NumberFormat("es-AR", { style: "percent", maximumFractionDigits: 1 }).format(n);
+    }
+    function rate(n) { return new Intl.NumberFormat("es-AR", { maximumFractionDigits: 1 }).format(n); }
+    function amountToInput(n) {
+      const r = round2(n);
+      return Number.isInteger(r) ? String(r) : r.toFixed(2).replace(".", ",");
+    }
+    function parseAmount(raw, allowZero) {
+      const t = String(raw ?? "").trim().replace(/\s/g, "");
+      if (!t) return allowZero ? 0 : null;
+      let norm = t;
+      if (t.includes(",") && t.includes(".")) norm = t.replace(/\./g, "").replace(",", ".");
+      else if (t.includes(",")) norm = t.replace(",", ".");
+      if (!/^\d+(\.\d+)?$/.test(norm)) return null;
+      const v = Number(norm);
+      if (!Number.isFinite(v) || v < 0 || v > 1e15) return null;
+      if (v === 0) return allowZero ? 0 : null;
+      return round2(v);
+    }
+    function validTx(t) {
+      return t && (t.kind === "expense" || t.kind === "income") && typeof t.amount === "number" && t.amount > 0 && /^\d{4}-\d{2}-\d{2}$/.test(t.date || "") && t.category;
+    }
+    function inMonth(t, month) { return t.date.slice(0, 7) === month; }
+    function totals(txs, month) {
+      let income = 0, expense = 0;
+      for (const t of txs) {
+        if (month && !inMonth(t, month)) continue;
+        if (t.kind === "income") income = round2(income + t.amount);
+        else expense = round2(expense + t.amount);
+      }
+      return { income, expense, balance: round2(income - expense) };
+    }
+    function byCat(month) {
+      const map = new Map();
+      for (const t of state.txs) {
+        if (t.kind !== "expense" || !inMonth(t, month)) continue;
+        map.set(t.category, round2((map.get(t.category) || 0) + t.amount));
+      }
+      return [...map.entries()].map(([name, value]) => ({ name, value })).sort((a, b) => b.value - a.value);
+    }
+    function futureValue(pv, pmt, i, n) {
+      if (n <= 0) return pv;
+      if (Math.abs(i) < 1e-12) return pv + pmt * n;
+      const g = Math.pow(1 + i, n);
+      return pv * g + pmt * ((g - 1) / i);
+    }
+    function series() {
+      sanitize();
+      const g = state.grow;
+      const i = g.annualRate / 100 / 12;
+      const inf = g.inflation / 100;
+      const pts = [];
+      for (let y = 0; y <= g.years; y++) {
+        const n = y * 12;
+        const total = futureValue(g.initial, g.monthly, i, n);
+        const contributed = g.initial + g.monthly * n;
+        pts.push({
+          y,
+          contributed,
+          interest: Math.max(0, total - contributed),
+          total,
+          real: inf === 0 ? total : total / Math.pow(1 + inf, y)
+        });
+      }
+      return pts;
+    }
+    function monthsToGoal() {
+      const g = state.grow;
+      if (g.goal <= 0) return null;
+      const i = g.annualRate / 100 / 12;
+      const at = (n) => futureValue(g.initial, g.monthly, i, n);
+      if (g.initial >= g.goal) return 0;
+      if (at(480) < g.goal) return null;
+      let lo = 0, hi = 480;
+      while (lo < hi) {
+        const mid = (lo + hi) >> 1;
+        if (at(mid) >= g.goal) hi = mid;
+        else lo = mid + 1;
+      }
+      return lo;
+    }
+    function horizon(months) {
+      const y = Math.floor(months / 12), r = months % 12;
+      const ys = y === 1 ? "1 año" : y + " años";
+      const ms = r === 1 ? "1 mes" : r + " meses";
+      if (!y) return ms;
+      if (!r) return ys;
+      return ys + " y " + ms;
+    }
+    function notify(msg) {
+      ui.notice = msg;
+      const el = document.getElementById("status");
+      el.hidden = !msg;
+      el.textContent = msg;
+      clearTimeout(notify.t);
+      if (msg) notify.t = setTimeout(() => { ui.notice = ""; el.hidden = true; }, 4200);
+    }
+    function defaultDate(month) {
+      const today = monthKey(new Date());
+      if (today === month) {
+        const d = new Date();
+        return today + "-" + String(d.getDate()).padStart(2, "0");
+      }
+      return month + "-01";
+    }
+
+    function areaSvg(pts, compact) {
+      const w = 640, h = compact ? 180 : 280, l = 4, r = 4, t = 12, b = compact ? 8 : 26;
+      const max = Math.max(1, ...pts.map((p) => p.total));
+      const X = (i) => l + (pts.length < 2 ? 0 : i / (pts.length - 1)) * (w - l - r);
+      const Y = (v) => t + (1 - v / max) * (h - t - b);
+      const poly = (keyTop, keyBot) => {
+        const up = pts.map((p, i) => X(i).toFixed(1) + "," + Y(p[keyTop]).toFixed(1));
+        const down = pts.map((p, i) => X(i).toFixed(1) + "," + Y(keyBot ? p[keyBot] : 0).toFixed(1)).reverse();
+        return up.concat(down).join(" ");
+      };
+      const real = pts.map((p, i) => X(i).toFixed(1) + "," + Y(p.real).toFixed(1)).join(" ");
+      const labels = compact ? "" : pts.map((p, i) => {
+        if (pts.length > 14 && i % Math.ceil(pts.length / 8) && i !== pts.length - 1) return "";
+        const name = p.y === 0 ? "Hoy" : "Año " + p.y;
+        return `<text x="${X(i).toFixed(1)}" y="${h - 6}" text-anchor="middle" fill="#93a0b5" font-size="11">${name}</text>`;
+      }).join("");
+      const showReal = state.grow.inflation > 0;
+      return `<svg class="chart" viewBox="0 0 ${w} ${h}" role="img" aria-label="Curva de interés compuesto">
+        <polygon points="${poly("contributed")}" fill="#2fbf86" opacity=".9"/>
+        <polygon points="${poly("total", "contributed")}" fill="#e0b15a"/>
+        ${showReal ? `<polyline points="${real}" fill="none" stroke="#f07178" stroke-width="2.5"/>` : ""}
+        ${labels}
+      </svg>
+      <div class="legend">
+        <span><i class="sw" style="background:#2fbf86"></i>Aportado</span>
+        <span><i class="sw" style="background:#e0b15a"></i>Intereses</span>
+        ${showReal ? `<span><i class="sw" style="background:#f07178"></i>A valor de hoy</span>` : ""}
+      </div>`;
+    }
+    function barsSvg(rows) {
+      const w = 640, h = 220, pad = 28;
+      const max = Math.max(1, ...rows.flatMap((r) => [r.income, r.expense]));
+      const gw = (w - 20) / rows.length;
+      const Y = (v) => pad + (1 - v / max) * (h - pad - 24);
+      const base = h - 24;
+      let body = "";
+      rows.forEach((r, i) => {
+        const x = 10 + i * gw;
+        const bw = Math.max(4, gw * .28);
+        body += `<rect x="${(x + gw * .18).toFixed(1)}" y="${Y(r.income).toFixed(1)}" width="${bw.toFixed(1)}" height="${Math.max(0, base - Y(r.income)).toFixed(1)}" rx="3" fill="#3dcc8a"/>`;
+        body += `<rect x="${(x + gw * .52).toFixed(1)}" y="${Y(r.expense).toFixed(1)}" width="${bw.toFixed(1)}" height="${Math.max(0, base - Y(r.expense)).toFixed(1)}" rx="3" fill="#f07178"/>`;
+        body += `<text x="${(x + gw / 2).toFixed(1)}" y="${h - 6}" text-anchor="middle" fill="#93a0b5" font-size="12">${esc(r.label)}</text>`;
+      });
+      return `<svg class="chart" viewBox="0 0 ${w} ${h}" role="img" aria-label="Ingresos y gastos de seis meses">${body}</svg>
+        <div class="legend"><span><i class="sw" style="background:#3dcc8a"></i>Ingresos</span><span><i class="sw" style="background:#f07178"></i>Gastos</span></div>`;
+    }
+    function donutSvg(slices, total) {
+      const r = 58, c = 2 * Math.PI * r;
+      let off = 0;
+      const arcs = slices.map((s, i) => {
+        const len = total ? (s.value / total) * c : 0;
+        const gap = slices.length > 1 ? Math.min(3, len * .08) : 0;
+        const dash = Math.max(0, len - gap);
+        const el = `<circle cx="90" cy="90" r="${r}" fill="none" stroke="${COLORS[i % COLORS.length]}" stroke-width="18" stroke-dasharray="${dash} ${c - dash}" stroke-dashoffset="${-off}" transform="rotate(-90 90 90)"/>`;
+        off += len;
+        return el;
+      }).join("");
+      const label = esc(money(total));
+      return `<svg class="chart" viewBox="0 0 180 180" role="img" aria-label="Gastos por categoría">${arcs}
+        <text x="90" y="84" text-anchor="middle" fill="#93a0b5" font-size="11">Gastos</text>
+        <text x="90" y="104" text-anchor="middle" fill="#f4f7fb" font-size="${label.length > 14 ? 10 : 12}" font-weight="700">${label}</text>
+      </svg>
+      <ul class="list">${slices.map((s, i) => `<li><span><i class="sw" style="background:${COLORS[i % COLORS.length]}"></i>${esc(s.name)}</span><span class="money muted">${esc(money(s.value))}</span></li>`).join("")}</ul>`;
+    }
+
+    function lastPoint() { return series().at(-1); }
+    function growCopy() {
+      const g = state.grow;
+      const last = lastPoint();
+      const beats = g.inflation > 0 && last.real >= last.contributed;
+      const months = monthsToGoal();
+      let goal = "";
+      if (g.goal > 0) {
+        if (months == null) goal = "Con estos números no llegás a la meta en 40 años.";
+        else if (months === 0) goal = "El capital inicial ya cubre la meta.";
+        else goal = `Llegás a la meta en ${horizon(months)}${months > g.years * 12 ? ", más allá del plazo del gráfico" : ""}.`;
+      }
+      return `<p class="muted">En ${g.years} ${g.years === 1 ? "año" : "años"} tendrías</p>
+        <p class="hero">${esc(money(last.total))}</p>
+        <p class="muted">Partís de ${esc(money(g.initial))} y aportás ${esc(money(g.monthly))} por mes al ${esc(pct(g.annualRate / 100))} nominal anual.</p>
+        <div class="stats" style="margin-top:1rem">
+          <div class="stat"><span class="muted">Aportado</span><b>${esc(money(last.contributed))}</b></div>
+          <div class="stat"><span class="muted">Intereses</span><b>${esc(money(last.interest))}</b></div>
+          <div class="stat"><span class="muted">${g.inflation > 0 ? "A valor de hoy" : "Interés del total"}</span><b>${g.inflation > 0 ? esc(money(last.real)) : esc(pct(last.total ? last.interest / last.total : 0))}</b></div>
+        </div>
+        ${g.inflation > 0 ? `<p class="${beats ? "ok" : "warn"}" style="margin-top:1rem">${beats ? "A valor de hoy, el resultado todavía supera lo aportado." : "La inflación que cargaste se come el crecimiento: a valor de hoy no le ganás a lo que pusiste."}</p>` : ""}
+        ${goal ? `<p style="margin-top:.8rem"><b>${esc(goal)}</b></p>` : ""}`;
+    }
+
+    function resumen() {
+      const tot = totals(state.txs, ui.month);
+      const life = totals(state.txs);
+      const cats = byCat(ui.month);
+      const months = [];
+      for (let i = 5; i >= 0; i--) {
+        const key = shift(ui.month, -i);
+        const t = totals(state.txs, key);
+        months.push({ label: monthShort(key), income: t.income, expense: t.expense });
+      }
+      const hasTrend = months.some((m) => m.income || m.expense);
+      const monthTx = state.txs.filter((t) => inMonth(t, ui.month));
+      const recent = monthTx.slice().sort((a, b) => b.date.localeCompare(a.date)).slice(0, 5);
+      const lines = [];
+      if (tot.income || tot.expense) {
+        if (tot.income && tot.balance < 0) lines.push("Gastaste más de lo que ingresó.");
+        else if (tot.income) lines.push(`Ahorraste ${pct(tot.balance / tot.income)} de tus ingresos.`);
+        else lines.push("Este mes no tiene ingresos anotados.");
+        if (cats[0] && tot.expense) lines.push(`Lo que más gastaste fue ${cats[0].name}: ${pct(cats[0].value / tot.expense)} del total.`);
+      }
+      const g = state.grow;
+      return `<section class="grid-4">
+          <article class="card kpi"><span>Ingresos</span><strong class="sage">${esc(money(tot.income))}</strong></article>
+          <article class="card kpi"><span>Gastos</span><strong class="clay">${esc(money(tot.expense))}</strong></article>
+          <article class="card kpi"><span>Saldo</span><strong class="${tot.balance >= 0 ? "sage" : "clay"}">${esc(money(tot.balance))}</strong></article>
+          <article class="card kpi"><span>Ahorro</span><strong>${tot.income ? esc(pct(tot.balance / tot.income)) : "—"}</strong><span class="note">sobre los ingresos</span></article>
+        </section>
+        <p class="muted">Saldo de todo el libro: ${esc(money(life.balance))} · ${state.txs.length} movimientos</p>
+        ${lines.length ? `<div class="callout">${lines.map((l) => `<p style="margin:.2rem 0">${esc(l)}</p>`).join("")}</div>` : ""}
+        ${hasTrend || cats.length ? `<div class="grid-2">
+          ${hasTrend ? `<section class="card"><h2>Seis meses</h2><p class="muted">Ingresos y gastos hasta ${esc(monthLabel(ui.month))}.</p>${barsSvg(months)}</section>` : ""}
+          ${cats.length ? `<section class="card"><h2>En qué se fue</h2><p class="muted">Gastos de ${esc(monthLabel(ui.month))}.</p>${donutSvg(cats, tot.expense)}</section>` : ""}
+        </div>` : `<section class="card">
+          <h2>${state.txs.length ? esc(monthLabel(ui.month)) + " todavía está vacío." : "El libro está en blanco."}</h2>
+          <p class="muted">${state.txs.length ? "Los otros meses siguen guardados. Cambiá de mes o anotá algo en este." : "Anotá un sueldo, un alquiler o lo que hayas gastado hoy. Si preferís ver cómo se ve, cargá un mes de ejemplo."}</p>
+          <div class="row" style="margin-top:1rem">
+            <button class="btn primary" type="button" data-go="movimientos">Anotar movimiento</button>
+            ${state.txs.length ? "" : `<button class="btn" type="button" id="demo">Cargar un mes de ejemplo</button>`}
+          </div>
+        </section>`}
+        ${recent.length ? `<section><div class="between"><h2>Últimos del mes</h2><button class="btn" type="button" data-go="movimientos">Ver y editar</button></div>
+          <div class="card"><ul class="list">${recent.map((t) => `<li><div><b>${esc(t.category)}</b><p class="note">${esc(formatDay(t.date))}</p></div><span class="money ${t.kind === "expense" ? "clay" : "sage"}">${t.kind === "expense" ? "−" : "+"}${esc(money(t.amount))}</span></li>`).join("")}</ul></div></section>` : ""}
+        <section class="card">
+          <div class="between"><div><h2>Si seguís aportando</h2><p class="muted">${esc(money(g.monthly))} por mes, al ${esc(pct(g.annualRate / 100))} anual, durante ${g.years} ${g.years === 1 ? "año" : "años"}.</p></div>
+            <button class="btn" type="button" data-go="crecer">Ajustar</button></div>
+          ${growCopy()}
+          ${areaSvg(series(), true)}
+        </section>`;
+    }
+
+    function catOptions(kind, selected) {
+      const list = kind === "expense" ? state.expenseCats : state.incomeCats;
+      const cur = selected === "__new" || list.includes(selected) ? selected : (list[0] || "__new");
+      return list.map((c) => `<option value="${esc(c)}"${c === cur ? " selected" : ""}>${esc(c)}</option>`).join("") + `<option value="__new"${cur === "__new" ? " selected" : ""}>Nueva categoría…</option>`;
+    }
+    function formHtml() {
+      const d = draft;
+      if (!d.date) d.date = defaultDate(ui.month);
+      return `<form class="card stack" id="tx-form">
+        <div class="between"><h2>${d.editing ? "Editar movimiento" : "Nuevo movimiento"}</h2>${d.editing ? `<button class="btn" type="button" id="cancel-edit">Cancelar</button>` : ""}</div>
+        <div class="row">
+          <button class="btn ${d.kind === "expense" ? "clayon" : ""}" type="button" data-kind="expense">Gasto</button>
+          <button class="btn ${d.kind === "income" ? "sageon" : ""}" type="button" data-kind="income">Ingreso</button>
+        </div>
+        <div class="grid-2">
+          <label class="f" style="grid-column:1/-1">Monto<input class="field" name="amount" inputmode="decimal" autocomplete="off" placeholder="0,00" value="${esc(d.amount)}" required></label>
+          <label class="f">Categoría<select class="field" name="category" id="cat">${catOptions(d.kind, d.category)}</select></label>
+          <label class="f">Fecha<input class="field" type="date" name="date" value="${esc(d.date)}" required></label>
+          <label class="f ${d.category === "__new" ? "" : "hide"}" id="custom-wrap" style="grid-column:1/-1">Nombre de la categoría<input class="field" name="custom" maxlength="40" placeholder="Por ejemplo, Mascotas" value="${esc(d.custom)}"></label>
+          <label class="f" style="grid-column:1/-1">Nota<input class="field" name="note" maxlength="140" placeholder="Opcional" value="${esc(d.note)}"></label>
+        </div>
+        <label class="check"><input type="checkbox" name="recurring" ${d.recurring ? "checked" : ""}> Repetir cada mes</label>
+        <p class="muted ${d.date.slice(0, 7) === ui.month ? "hide" : ""}" id="date-hint">Esta fecha no es de ${esc(monthLabel(ui.month))}. El movimiento se anota igual, en su mes.</p>
+        <p class="clay" id="form-error" role="alert"></p>
+        <button class="btn primary" type="submit">${d.editing ? "Guardar cambios" : "Anotar movimiento"}</button>
+      </form>`;
+    }
+    function txRows() {
+      const q = ui.query.trim().toLocaleLowerCase("es");
+      return state.txs.filter((t) => {
+        if (ui.scope === "month" && !inMonth(t, ui.month)) return false;
+        if (ui.kindFilter !== "all" && t.kind !== ui.kindFilter) return false;
+        if (q && !`${t.category} ${t.note}`.toLocaleLowerCase("es").includes(q)) return false;
+        return true;
+      }).sort((a, b) => b.date.localeCompare(a.date) || b.id.localeCompare(a.id));
+    }
+    function listHtml() {
+      const rows = txRows();
+      if (!rows.length) return `<p class="card muted" style="text-align:center">Ningún movimiento coincide.</p>`;
+      return `<div class="card"><ul class="list" id="rows">${rows.map((t) => `<li>
+        <div style="min-width:0">
+          <b>${esc(t.category)}</b> ${t.recurring ? `<span class="muted">· recurrente</span>` : ""} ${t.id.startsWith("demo-") ? `<span class="muted">· ejemplo</span>` : ""}
+          <p class="note">${esc(formatDay(t.date))}${t.note ? " · " + esc(t.note) : ""}${ui.scope === "all" ? " · " + esc(t.date.slice(0, 7)) : ""}</p>
+          ${ui.pending === t.id ? `<div class="row" style="margin-top:.4rem"><button class="btn danger" type="button" data-del="${esc(t.id)}">Borrar</button><button class="btn" type="button" id="undel">Cancelar</button></div>` : `<div class="row" style="margin-top:.4rem"><button class="btn" type="button" data-edit="${esc(t.id)}">Editar</button><button class="btn" type="button" data-ask="${esc(t.id)}">Borrar</button></div>`}
+        </div>
+        <span class="money ${t.kind === "expense" ? "clay" : "sage"}">${t.kind === "expense" ? "−" : "+"}${esc(money(t.amount))}</span>
+      </li>`).join("")}</ul></div>`;
+    }
+    function movimientos() {
+      const chips = (name, current, items) => items.map(([id, label]) => `<button class="btn ${current === id ? "on" : ""}" type="button" data-${name}="${id}">${label}</button>`).join("");
+      return `${formHtml()}
+        <div class="stack">
+          <input class="field" id="q" placeholder="Buscar categoría o nota" value="${esc(ui.query)}">
+          <div class="row">
+            ${chips("kf", ui.kindFilter, [["all", "Todos"], ["expense", "Gastos"], ["income", "Ingresos"]])}
+            ${chips("sc", ui.scope, [["month", "Este mes"], ["all", "Historial"]])}
+            <button class="btn" type="button" id="recur">Copiar recurrentes</button>
+          </div>
+          <p class="muted" id="count"></p>
+          <div id="list">${listHtml()}</div>
+        </div>`;
+    }
+    function limites() {
+      const names = new Set(state.expenseCats);
+      for (const t of state.txs) if (t.kind === "expense" && inMonth(t, ui.month)) names.add(t.category);
+      const spentOf = (c) => round2(state.txs.filter((t) => t.kind === "expense" && t.category === c && inMonth(t, ui.month)).reduce((s, t) => s + t.amount, 0));
+      return `<section class="card"><h2>Límites de ${esc(monthLabel(ui.month))}</h2>
+        <p class="muted">Un tope por categoría. Si lo dejás vacío, no tiene límite. Se guarda al salir del campo.</p>
+        <ul class="list">${[...names].map((c) => {
+          const spent = spentOf(c);
+          const limit = state.budgets.find((b) => b.category === c)?.limit || 0;
+          const over = limit > 0 && spent > limit;
+          const width = limit > 0 ? Math.min(100, Math.round((spent / limit) * 100)) : 0;
+          return `<li style="display:block">
+            <div class="between"><b>${esc(c)}</b><span class="muted">Gastado ${esc(money(spent))}</span></div>
+            <div class="track" style="margin:.55rem 0"><i style="width:${width}%;background:${over ? "var(--clay)" : "var(--sage)"}"></i></div>
+            <div class="between" style="gap:1rem;align-items:end">
+              <p class="${over ? "clay" : "muted"}" style="margin:0">${limit <= 0 ? "Sin límite" : over ? "Excedido en " + esc(money(round2(spent - limit))) : "Quedan " + esc(money(round2(limit - spent)))}</p>
+              <label class="f">Límite<input class="field" data-limit="${esc(c)}" inputmode="decimal" placeholder="Sin límite" value="${limit ? esc(amountToInput(limit)) : ""}"></label>
+            </div>
+          </li>`;
+        }).join("")}</ul></section>`;
+    }
+    function crecer() {
+      const g = state.grow;
+      const bal = totals(state.txs, ui.month).balance;
+      const slider = (key, label, min, max, step, suffix) => `<div>
+        <div class="between"><label for="g-${key}">${label}</label><b data-grow-label="${key}">${esc(rate(Math.min(g[key], max)))}${suffix}</b></div>
+        <input id="g-${key}" type="range" min="${min}" max="${max}" step="${step}" value="${Math.min(g[key], max)}" data-grow="${key}" data-suffix="${esc(suffix)}">
+      </div>`;
+      const moneyField = (key, label, hint) => `<label class="f">${label}<input class="field" data-money="${key}" inputmode="decimal" value="${esc(amountToInput(g[key]))}">${hint ? `<span class="muted" style="font-weight:500">${hint}</span>` : ""}</label>`;
+      const pts = series();
+      return `<div class="split">
+        <form class="card stack" id="grow-form" onsubmit="return false">
+          <div><h2>La simulación</h2><p class="muted">Mové la tasa o el plazo y la curva se actualiza.</p></div>
+          ${moneyField("initial", "Capital inicial")}
+          ${moneyField("monthly", "Aporte mensual", "Se suma al cierre de cada mes.")}
+          ${bal > 0 ? `<button class="btn" type="button" id="use-balance">Usar el saldo del mes (${esc(money(bal))})</button>` : ""}
+          ${slider("annualRate", "Tasa nominal anual", 0, 80, 0.5, "%")}
+          ${slider("inflation", "Inflación anual", 0, 80, 0.5, "%")}
+          ${slider("years", "Plazo", 1, 40, 1, g.years === 1 ? " año" : " años")}
+          ${moneyField("goal", "Meta, si tenés una", "Dejala en cero si no querés marcar una.")}
+        </form>
+        <div class="stack" id="grow-live">
+          <section class="card">${growCopy()}</section>
+          <section class="card"><h2>Cómo crece</h2>${areaSvg(pts, false)}</section>
+          <section class="card"><h2>Año por año</h2><div class="scroll"><table>
+            <thead><tr><th>Año</th><th>Aportado</th><th>Intereses</th><th>Total</th>${g.inflation > 0 ? "<th>Hoy</th>" : ""}</tr></thead>
+            <tbody>${pts.map((p) => `<tr><th>${p.y === 0 ? "Hoy" : p.y}</th><td>${esc(money(p.contributed))}</td><td>${esc(money(p.interest))}</td><td>${esc(money(p.total))}</td>${g.inflation > 0 ? `<td>${esc(money(p.real))}</td>` : ""}</tr>`).join("")}</tbody>
+          </table></div>
+          <p class="muted">Simulación educativa. La tasa es nominal anual y se capitaliza cada mes. No contempla impuestos ni comisiones. No es una recomendación.</p></section>
+        </div>
+      </div>`;
+    }
+    function respaldo() {
+      const life = totals(state.txs);
+      const hasDemo = state.txs.some((t) => t.id.startsWith("demo-"));
+      return `<div class="stack">
+        <section class="card stack">
+          <h2>El libro</h2>
+          <div class="grid-2">
+            <label class="f">Nombre<input class="field" id="name" maxlength="40" placeholder="Gastos de casa" value="${esc(state.ledgerName)}"></label>
+            <label class="f">Moneda<select class="field" id="currency">
+              ${["ARS", "Peso argentino (ARS)", "USD", "Dólar (USD)", "EUR", "Euro (EUR)"].reduce((html, item, i, arr) => i % 2 ? html : html + `<option value="${arr[i]}"${state.currency === arr[i] ? " selected" : ""}>${arr[i + 1]}</option>`, "")}
+            </select></label>
+          </div>
+          <p class="muted">Cambiar la moneda no convierte los montos. Saldo histórico: ${esc(money(life.balance))}.</p>
+        </section>
+        <section class="card">
+          <h2>Llevarlo a otro dispositivo</h2>
+          <p class="muted">Folio guarda todo en este navegador. El teléfono y la computadora no comparten la libreta solos: exportá el JSON e importalo en el otro. El CSV es para una planilla; el JSON es el respaldo.</p>
+          <div class="row" style="margin-top:1rem">
+            <button class="btn primary" type="button" id="exp-json">Exportar JSON</button>
+            <button class="btn" type="button" id="exp-csv">Exportar CSV</button>
+            <label class="btn">Importar JSON<input id="imp" type="file" accept="application/json,.json" hidden></label>
+          </div>
+        </section>
+        <section class="card">
+          <h2>Ejemplo</h2>
+          <p class="muted">Carga un mes ilustrativo sin borrar lo que ya anotaste.</p>
+          <div class="row" style="margin-top:1rem">
+            <button class="btn" type="button" id="demo">Cargar mes de ejemplo</button>
+            ${hasDemo ? `<button class="btn" type="button" id="clear-demo">Quitar ejemplo</button>` : ""}
+          </div>
+        </section>
+        <section class="card">
+          <h2>Vaciar</h2>
+          <p class="muted">Borra movimientos y límites de este navegador. Conserva la moneda, el nombre y la simulación.</p>
+          <button class="btn danger" type="button" id="wipe" style="margin-top:1rem">Vaciar movimientos</button>
+        </section>
+      </div>`;
+    }
+
+    function paint() {
+      document.getElementById("book-name").textContent = state.ledgerName || "Libro de caja";
+      document.getElementById("month-label").textContent = monthLabel(ui.month);
+      document.getElementById("today").hidden = ui.month === monthKey(new Date());
+      document.getElementById("nav").innerHTML = TABS.map(([id, label]) => `<button class="btn ${ui.tab === id ? "on" : ""}" type="button" data-tab="${id}">${label}</button>`).join("");
+      const view = { resumen, movimientos, limites, crecer, respaldo }[ui.tab];
+      document.getElementById("view").innerHTML = view();
+      const status = document.getElementById("status");
+      status.hidden = !ui.notice;
+      status.textContent = ui.notice;
+      bind();
+    }
+    function refreshList() {
+      const list = document.getElementById("list");
+      if (list) list.innerHTML = listHtml();
+      const count = document.getElementById("count");
+      if (count) {
+        const n = txRows().length;
+        count.textContent = n + (n === 1 ? " movimiento" : " movimientos");
+      }
+      bindRows();
+    }
+    function refreshGrow() {
+      sanitize();
+      save();
+      const live = document.getElementById("grow-live");
+      if (!live) return;
+      const g = state.grow;
+      const pts = series();
+      live.innerHTML = `<section class="card">${growCopy()}</section>
+        <section class="card"><h2>Cómo crece</h2>${areaSvg(pts, false)}</section>
+        <section class="card"><h2>Año por año</h2><div class="scroll"><table>
+          <thead><tr><th>Año</th><th>Aportado</th><th>Intereses</th><th>Total</th>${g.inflation > 0 ? "<th>Hoy</th>" : ""}</tr></thead>
+          <tbody>${pts.map((p) => `<tr><th>${p.y === 0 ? "Hoy" : p.y}</th><td>${esc(money(p.contributed))}</td><td>${esc(money(p.interest))}</td><td>${esc(money(p.total))}</td>${g.inflation > 0 ? `<td>${esc(money(p.real))}</td>` : ""}</tr>`).join("")}</tbody>
+        </table></div>
+        <p class="muted">Simulación educativa. La tasa es nominal anual y se capitaliza cada mes. No contempla impuestos ni comisiones. No es una recomendación.</p></section>`;
+      document.querySelectorAll("[data-grow-label]").forEach((el) => {
+        const key = el.dataset.growLabel;
+        const suffix = key === "years" ? (state.grow.years === 1 ? " año" : " años") : "%";
+        if (key === "annualRate" || key === "inflation" || key === "years") el.textContent = rate(state.grow[key]) + suffix;
+      });
+    }
+    function readDraftFromForm() {
+      const f = document.getElementById("tx-form");
+      if (!f) return;
+      draft.amount = f.amount.value;
+      draft.category = f.category.value;
+      draft.custom = f.custom.value;
+      draft.date = f.date.value;
+      draft.note = f.note.value;
+      draft.recurring = f.recurring.checked;
+    }
+    function saveTx(event) {
+      event.preventDefault();
+      readDraftFromForm();
+      const amount = parseAmount(draft.amount);
+      const err = document.getElementById("form-error");
+      if (amount == null) { err.textContent = "Ingresá un monto mayor a cero. Podés usar coma para los centavos."; return; }
+      let category = draft.category;
+      if (category === "__new") {
+        category = draft.custom.trim().replace(/\s+/g, " ").slice(0, 40);
+        if (!category) { err.textContent = "Nombrá la categoría."; return; }
+        const key = draft.kind === "expense" ? "expenseCats" : "incomeCats";
+        const found = state[key].find((c) => c.toLocaleLowerCase("es") === category.toLocaleLowerCase("es"));
+        if (found) category = found;
+        else state[key].push(category);
+      }
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(draft.date)) { err.textContent = "La fecha no es válida."; return; }
+      const tx = { kind: draft.kind, amount, category, date: draft.date, note: draft.note.trim().slice(0, 140), recurring: draft.recurring };
+      if (draft.editing) {
+        state.txs = state.txs.map((t) => t.id === draft.editing ? { ...tx, id: t.id } : t);
+        draft = blankDraft();
+        draft.date = defaultDate(ui.month);
+        notify("Cambios guardados.");
+      } else {
+        state.txs.push({ ...tx, id: uid() });
+        draft.amount = "";
+        draft.note = "";
+        draft.category = category;
+        notify("Movimiento anotado.");
+      }
+      save();
+      paint();
+    }
+    function loadDemo() {
+      const scale = state.currency === "ARS" ? 1 : state.currency === "USD" ? 0.001 : 0.00092;
+      const rows = [
+        [2, "income", "Sueldo", 950000, "Sueldo", true],
+        [21, "income", "Freelance", 120000, "Trabajo extra", false],
+        [5, "expense", "Vivienda", 280000, "Alquiler", true],
+        [8, "expense", "Comida", 86450, "Supermercado", false],
+        [19, "expense", "Comida", 23400, "Verdulería", false],
+        [3, "expense", "Transporte", 18000, "Carga SUBE", true],
+        [12, "expense", "Servicios", 24600, "Luz", true],
+        [6, "expense", "Salud", 45000, "Prepaga", true],
+        [18, "expense", "Ocio", 16000, "Cine", false],
+        [15, "expense", "Compras", 32900, "Farmacia y limpieza", false]
+      ];
+      const demos = rows.map(([day, kind, category, amount, note, recurring]) => ({
+        id: `demo-${day}-${category}`, kind, category, note, recurring,
+        amount: Math.max(1, Math.round(amount * scale)),
+        date: ui.month + "-" + String(day).padStart(2, "0")
+      }));
+      state.txs = state.txs.filter((t) => !t.id.startsWith("demo-")).concat(demos);
+      save();
+      notify("Cargué un mes de ejemplo.");
+      paint();
+    }
+    function exportJson() {
+      const payload = { version: 1, exportedAt: new Date().toISOString(), ...state };
+      download(`folio-${new Date().toISOString().slice(0, 10)}.json`, JSON.stringify(payload, null, 2), "application/json");
+      notify("Respaldo descargado.");
+    }
+    function exportCsv() {
+      const cell = (v) => {
+        const s = String(v);
+        const g = /^[=+\-@\t\r]/.test(s) ? "'" + s : s;
+        return `"${g.replaceAll('"', '""')}"`;
+      };
+      const lines = state.txs.slice().sort((a, b) => a.date.localeCompare(b.date)).map((t) =>
+        [t.date, t.kind === "income" ? "ingreso" : "gasto", t.category, t.amount.toFixed(2), t.note, t.recurring ? "si" : "no"].map(cell).join(",")
+      );
+      download("folio-movimientos.csv", "\uFEFFfecha,tipo,categoria,monto,nota,recurrente\n" + lines.join("\n") + "\n", "text/csv;charset=utf-8");
+      notify("Planilla descargada.");
+    }
+    function download(name, content, type) {
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(new Blob([content], { type }));
+      a.download = name;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(a.href);
+    }
+    function importFile(file) {
+      if (!file) return;
+      if (state.txs.length && !confirm("Importar reemplaza los datos de este navegador. ¿Seguir?")) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const data = JSON.parse(String(reader.result));
+          if (!data || !Array.isArray(data.txs)) throw new Error("bad");
+          const next = fresh();
+          next.txs = data.txs.filter(validTx).slice(0, 5000).map((t) => ({
+            id: String(t.id || uid()).slice(0, 80),
+            kind: t.kind,
+            amount: t.amount,
+            category: String(t.category).slice(0, 40),
+            date: t.date,
+            note: String(t.note || "").slice(0, 140),
+            recurring: !!t.recurring
+          }));
+          next.budgets = Array.isArray(data.budgets) ? data.budgets.filter((b) => b && b.limit > 0).slice(0, 40) : [];
+          if (["ARS", "USD", "EUR"].includes(data.currency)) next.currency = data.currency;
+          if (data.expenseCats?.length) next.expenseCats = data.expenseCats.slice(0, 40);
+          if (data.incomeCats?.length) next.incomeCats = data.incomeCats.slice(0, 40);
+          if (data.grow) next.grow = Object.assign(next.grow, data.grow);
+          next.ledgerName = String(data.ledgerName || "").slice(0, 40);
+          state = next;
+          sanitize();
+          save();
+          notify("Respaldo importado.");
+          paint();
+        } catch { notify("Ese archivo no es un respaldo de Folio."); }
+      };
+      reader.readAsText(file);
+    }
+    function applyRecurring() {
+      const templates = new Map();
+      state.txs.filter((t) => t.recurring).sort((a, b) => a.date.localeCompare(b.date)).forEach((t) => {
+        templates.set(`${t.kind}|${t.category}|${t.amount}|${t.note}`, t);
+      });
+      const existing = new Set(state.txs.filter((t) => inMonth(t, ui.month)).map((t) => `${t.kind}|${t.category}|${t.amount}|${t.note}`));
+      const [y, m] = ui.month.split("-").map(Number);
+      const last = new Date(y, m, 0).getDate();
+      let n = 0;
+      for (const [sig, t] of templates) {
+        if (existing.has(sig)) continue;
+        const day = Math.min(Number(t.date.slice(8, 10)) || 1, last);
+        state.txs.push({ ...t, id: uid(), date: ui.month + "-" + String(day).padStart(2, "0") });
+        n++;
+      }
+      if (n) save();
+      notify(n ? `Se anotaron ${n} recurrentes en este mes.` : "No había recurrentes nuevos para este mes.");
+      paint();
+    }
+    function bindRows() {
+      document.querySelectorAll("[data-edit]").forEach((b) => b.onclick = () => {
+        const t = state.txs.find((x) => x.id === b.dataset.edit);
+        if (!t) return;
+        draft = { kind: t.kind, amount: amountToInput(t.amount), category: t.category, custom: "", date: t.date, note: t.note, recurring: t.recurring, editing: t.id };
+        ui.tab = "movimientos";
+        paint();
+        document.getElementById("tx-form")?.scrollIntoView({ block: "start" });
+      });
+      document.querySelectorAll("[data-ask]").forEach((b) => b.onclick = () => { ui.pending = b.dataset.ask; refreshList(); });
+      document.querySelectorAll("[data-del]").forEach((b) => b.onclick = () => {
+        state.txs = state.txs.filter((t) => t.id !== b.dataset.del);
+        if (draft.editing === b.dataset.del) draft = blankDraft();
+        ui.pending = null;
+        save();
+        notify("Movimiento borrado.");
+        paint();
+      });
+      const undel = document.getElementById("undel");
+      if (undel) undel.onclick = () => { ui.pending = null; refreshList(); };
+    }
+    function bind() {
+      document.querySelectorAll("[data-tab]").forEach((b) => b.onclick = () => { readDraftFromForm(); ui.tab = b.dataset.tab; paint(); });
+      document.querySelectorAll("[data-go]").forEach((b) => b.onclick = () => { ui.tab = b.dataset.go; if (b.dataset.go === "movimientos" && !draft.editing) draft.date = draft.date || defaultDate(ui.month); paint(); });
+      document.querySelectorAll("#demo").forEach((b) => b.onclick = loadDemo);
+      const form = document.getElementById("tx-form");
+      if (form) {
+        form.onsubmit = saveTx;
+        form.querySelectorAll("[data-kind]").forEach((b) => b.onclick = () => {
+          readDraftFromForm();
+          draft.kind = b.dataset.kind;
+          const list = draft.kind === "expense" ? state.expenseCats : state.incomeCats;
+          if (draft.category !== "__new" && !list.includes(draft.category)) draft.category = draft.kind === "expense" && list.includes("Comida") ? "Comida" : (list[0] || "__new");
+          paint();
+        });
+        form.category.onchange = () => {
+          draft.category = form.category.value;
+          document.getElementById("custom-wrap").classList.toggle("hide", draft.category !== "__new");
+        };
+        form.date.onchange = () => {
+          draft.date = form.date.value;
+          document.getElementById("date-hint").classList.toggle("hide", draft.date.slice(0, 7) === ui.month);
+        };
+        const cancel = document.getElementById("cancel-edit");
+        if (cancel) cancel.onclick = () => { draft = blankDraft(); draft.date = defaultDate(ui.month); paint(); };
+      }
+      const q = document.getElementById("q");
+      if (q) q.oninput = () => { ui.query = q.value; refreshList(); };
+      document.querySelectorAll("[data-kf]").forEach((b) => b.onclick = () => { ui.kindFilter = b.dataset.kf; paint(); });
+      document.querySelectorAll("[data-sc]").forEach((b) => b.onclick = () => { ui.scope = b.dataset.sc; paint(); });
+      const recur = document.getElementById("recur");
+      if (recur) recur.onclick = applyRecurring;
+      refreshList();
+      document.querySelectorAll("[data-limit]").forEach((input) => {
+        input.onblur = () => {
+          const raw = input.value.trim();
+          const parsed = raw ? parseAmount(raw) : 0;
+          const category = input.dataset.limit;
+          state.budgets = state.budgets.filter((b) => b.category !== category);
+          if (parsed) state.budgets.push({ category, limit: parsed });
+          save();
+          paint();
+        };
+      });
+      document.querySelectorAll("[data-grow]").forEach((input) => input.oninput = () => {
+        state.grow[input.dataset.grow] = Number(input.value);
+        refreshGrow();
+      });
+      document.querySelectorAll("[data-money]").forEach((input) => {
+        input.oninput = () => {
+          const n = parseAmount(input.value, true);
+          if (n == null) return;
+          state.grow[input.dataset.money] = n;
+          refreshGrow();
+        };
+        input.onblur = () => {
+          const n = parseAmount(input.value, true);
+          state.grow[input.dataset.money] = n == null ? state.grow[input.dataset.money] : n;
+          sanitize();
+          input.value = amountToInput(state.grow[input.dataset.money]);
+          refreshGrow();
+        };
+      });
+      const useBal = document.getElementById("use-balance");
+      if (useBal) useBal.onclick = () => {
+        state.grow.monthly = totals(state.txs, ui.month).balance;
+        save();
+        paint();
+      };
+      const name = document.getElementById("name");
+      if (name) name.oninput = () => {
+        state.ledgerName = name.value.slice(0, 40);
+        save();
+        document.getElementById("book-name").textContent = state.ledgerName || "Libro de caja";
+      };
+      const currency = document.getElementById("currency");
+      if (currency) currency.onchange = () => { state.currency = currency.value; save(); paint(); };
+      const expJ = document.getElementById("exp-json");
+      if (expJ) expJ.onclick = exportJson;
+      const expC = document.getElementById("exp-csv");
+      if (expC) expC.onclick = exportCsv;
+      const imp = document.getElementById("imp");
+      if (imp) imp.onchange = () => { const file = imp.files?.[0]; imp.value = ""; importFile(file); };
+      const clearDemo = document.getElementById("clear-demo");
+      if (clearDemo) clearDemo.onclick = () => { state.txs = state.txs.filter((t) => !t.id.startsWith("demo-")); save(); notify("Quité los movimientos de ejemplo."); paint(); };
+      const wipe = document.getElementById("wipe");
+      if (wipe) wipe.onclick = () => {
+        if (confirm("Se borran los movimientos y los límites de este navegador. La simulación y la moneda se conservan.")) {
+          state.txs = [];
+          state.budgets = [];
+          save();
+          notify("Libro vaciado.");
+          paint();
+        }
+      };
+      bindRows();
+    }
+
+    document.getElementById("prev").onclick = () => { ui.month = shift(ui.month, -1); paint(); };
+    document.getElementById("next").onclick = () => { ui.month = shift(ui.month, 1); paint(); };
+    document.getElementById("today").onclick = () => { ui.month = monthKey(new Date()); paint(); };
+    sanitize();
+    draft.date = defaultDate(ui.month);
+    paint();
+  </script>
+</body>
+</html>
